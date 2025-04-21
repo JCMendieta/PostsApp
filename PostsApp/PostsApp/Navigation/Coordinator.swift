@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol CoordinatorProtocol {
+protocol CoordinatorProtocol: AnyObject {
     var navigationController: UINavigationController { get set }
     
     func navigateToStartScreen()
@@ -15,12 +15,16 @@ protocol CoordinatorProtocol {
 
 final class Coordinator: CoordinatorProtocol {
     var navigationController: UINavigationController
+    private let repository = Repository()
     
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
     }
     
     func navigateToStartScreen() {
-        navigationController.pushViewController(ViewController(), animated: true)
+        let useCase = FetchPostsUseCase(repository: repository)
+        let viewModel = PostsViewModel(coordinator: self, useCase: useCase)
+        let viewController = PostsViewController(viewModel: viewModel)
+        navigationController.pushViewController(viewController, animated: true)
     }
 }
