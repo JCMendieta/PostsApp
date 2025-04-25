@@ -11,6 +11,7 @@ protocol CoordinatorProtocol: AnyObject {
     var navigationController: UINavigationController { get set }
     
     func navigateToStartScreen()
+    func navigateToPostDetails(postId: String, postUserId: String)
 }
 
 final class Coordinator: CoordinatorProtocol {
@@ -25,6 +26,13 @@ final class Coordinator: CoordinatorProtocol {
         let useCase = FetchPostsUseCase(repository: repository)
         let viewModel = PostsViewModel(coordinator: self, useCase: useCase)
         let viewController = PostsViewController(viewModel: viewModel)
+        navigationController.pushViewController(viewController, animated: true)
+    }
+    
+    func navigateToPostDetails(postId: String, postUserId: String) {
+        let useCase = FetchPostDetailsUseCase(repository: repository)
+        let viewModel = PostDetailsViewModel(coordinator: self, useCase: useCase)
+        let viewController = PostDetailsViewController(viewModel: viewModel, userId: postUserId, postId: postId)
         navigationController.pushViewController(viewController, animated: true)
     }
 }

@@ -11,6 +11,13 @@ struct Post {
     let userId, id: Int
     let title, body: String
     
+    init() {
+        self.userId = 0
+        self.id = 0
+        self.title = ""
+        self.body = ""
+    }
+    
     init(from dto: PostDTO) {
         self.userId = dto.userId
         self.id = dto.id
