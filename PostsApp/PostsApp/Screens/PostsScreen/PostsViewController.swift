@@ -56,6 +56,7 @@ import UIKit
     }
 
 //MARK: - TableView protocols
+//FIXME: - Manage data type of userId in another component
 extension PostsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         viewModel.coordinator?.navigateToPostDetails(postId: String(viewModel.model.posts[indexPath.row].id), postUserId: String(viewModel.model.posts[indexPath.row].userId))
