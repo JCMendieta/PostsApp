@@ -7,6 +7,7 @@
 
 import Foundation
 
+//MARK: - PostDTO
 struct PostDTO: Decodable {
     let userId, id: Int
     let title, body: String
