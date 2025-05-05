@@ -28,22 +28,8 @@ final class PostDetailsViewController: UIViewController {
         return stack
     }()
     
-    lazy var titleLabel: UILabel = {
-        let title = UILabel()
-        title.text = ""
-        title.translatesAutoresizingMaskIntoConstraints = false
-        title.numberOfLines = 0
-        return title
-    }()
-    
-    lazy var postDescriptionLabel: UILabel = {
-        let description = UILabel()
-        description.text = ""
-        description.translatesAutoresizingMaskIntoConstraints = false
-        description.numberOfLines = 10
-        description.font = description.font.withSize(12)
-        return description
-    }()
+    lazy var titleLabel: UILabel = makeLabel()
+    lazy var postDescriptionLabel: UILabel = makeLabel(fontSize: 12, numberOfLines: 10)
     
     lazy var authorSection: UIView = {
         let authorSection = UIView()
@@ -60,69 +46,14 @@ final class PostDetailsViewController: UIViewController {
         return authorStack
     }()
     
-    lazy var authorName: UILabel = {
-        let authorName = UILabel()
-        authorName.text = ""
-        authorName.translatesAutoresizingMaskIntoConstraints = false
-        authorName.numberOfLines = 0
-        return authorName
-    }()
-    
-    lazy var authorUserName: UILabel = {
-        let authorUserName = UILabel()
-        authorUserName.text = ""
-        authorUserName.translatesAutoresizingMaskIntoConstraints = false
-        authorUserName.numberOfLines = 0
-        return authorUserName
-    }()
-    
-    lazy var authorEmail: UILabel = {
-        let authorEmail = UILabel()
-        authorEmail.text = ""
-        authorEmail.translatesAutoresizingMaskIntoConstraints = false
-        authorEmail.numberOfLines = 0
-        return authorEmail
-    }()
-    
-    lazy var authorAddress: UILabel = {
-        let authorAddress = UILabel()
-        authorAddress.text = ""
-        authorAddress.translatesAutoresizingMaskIntoConstraints = false
-        authorAddress.numberOfLines = 0
-        return authorAddress
-    }()
-    
-    lazy var authorPhone: UILabel = {
-        let authorPhone = UILabel()
-        authorPhone.text = ""
-        authorPhone.translatesAutoresizingMaskIntoConstraints = false
-        authorPhone.numberOfLines = 0
-        return authorPhone
-    }()
-    
-    lazy var authorWebsite: UILabel = {
-        let authorWebsite = UILabel()
-        authorWebsite.text = ""
-        authorWebsite.translatesAutoresizingMaskIntoConstraints = false
-        authorWebsite.numberOfLines = 0
-        return authorWebsite
-    }()
-    
-    lazy var authorCompanyName: UILabel = {
-        let authorCompanyName = UILabel()
-        authorCompanyName.text = ""
-        authorCompanyName.translatesAutoresizingMaskIntoConstraints = false
-        authorCompanyName.numberOfLines = 0
-        return authorCompanyName
-    }()
-    
-    lazy var authorCompanyCatchPhrase: UILabel = {
-        let authorCompanyCatchPhrase = UILabel()
-        authorCompanyCatchPhrase.text = ""
-        authorCompanyCatchPhrase.translatesAutoresizingMaskIntoConstraints = false
-        authorCompanyCatchPhrase.numberOfLines = 0
-        return authorCompanyCatchPhrase
-    }()
+    lazy var authorName: UILabel = makeLabel()
+    lazy var authorUserName: UILabel = makeLabel()
+    lazy var authorEmail: UILabel = makeLabel()
+    lazy var authorAddress: UILabel = makeLabel()
+    lazy var authorPhone: UILabel = makeLabel()
+    lazy var authorWebsite: UILabel = makeLabel()
+    lazy var authorCompanyName: UILabel = makeLabel()
+    lazy var authorCompanyCatchPhrase: UILabel = makeLabel()
     
     lazy var commentsButton: CommentsButton = {
         let button = CommentsButton()
@@ -246,21 +177,31 @@ final class PostDetailsViewController: UIViewController {
         spinner.isHidden = true
     }
     
+    private func makeLabel(fontSize: CGFloat = 17, numberOfLines: Int = 0, text: String = "") -> UILabel {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = numberOfLines
+        label.font = label.font.withSize(fontSize)
+        label.text = text
+        
+        return label
+    }
+    
     @MainActor
     private func fetchPost() async {
         await viewModel.fetchPostDetails(postId: postId, userId: userId)
         
-        self.titleLabel.text = "Title: \(self.viewModel.model.post.title)"
-        self.postDescriptionLabel.text = self.viewModel.model.post.body
+        titleLabel.text = "Title: \(self.viewModel.model.post.title)"
+        postDescriptionLabel.text = self.viewModel.model.post.body
         
-        self.authorName.text = "Name: \(self.viewModel.model.user.name)"
-        self.authorUserName.text = "Username: \(self.viewModel.model.user.username)"
-        self.authorEmail.text = "Email: \(self.viewModel.model.user.email)"
-        self.authorAddress.text = "Address: \(self.viewModel.model.user.street)"
-        self.authorPhone.text = "Phone: \(self.viewModel.model.user.phone)"
-        self.authorWebsite.text = "Website: \(self.viewModel.model.user.website)"
-        self.authorCompanyName.text = "Company name: \(self.viewModel.model.user.companyName)"
-        self.authorCompanyCatchPhrase.text = "Company catchphrase: \(self.viewModel.model.user.companyCatchPhrase)"
+        authorName.text = "Name: \(self.viewModel.model.user.name)"
+        authorUserName.text = "Username: \(self.viewModel.model.user.username)"
+        authorEmail.text = "Email: \(self.viewModel.model.user.email)"
+        authorAddress.text = "Address: \(self.viewModel.model.user.street)"
+        authorPhone.text = "Phone: \(self.viewModel.model.user.phone)"
+        authorWebsite.text = "Website: \(self.viewModel.model.user.website)"
+        authorCompanyName.text = "Company name: \(self.viewModel.model.user.companyName)"
+        authorCompanyCatchPhrase.text = "Company catchphrase: \(self.viewModel.model.user.companyCatchPhrase)"
         
         authorSection.backgroundColor = UIColor.systemGray6
         authorSection.layer.borderColor = UIColor.lightGray.cgColor
