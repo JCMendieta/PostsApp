@@ -7,6 +7,11 @@
 
 import UIKit
 
+enum PostsScreenSection {
+    case favorites
+    case regular
+}
+
     final class PostsViewController: UIViewController {
         private let viewModel: PostsViewModelProtocol
         
@@ -60,7 +65,7 @@ import UIKit
 //FIXME: - Manage data type of userId in another component
 extension PostsViewController: UITableViewDelegate, UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return viewModel.sections.count
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -72,19 +77,20 @@ extension PostsViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        section == 0
-        ? viewModel.model.favoritePosts.count
-        : viewModel.model.regularPosts.count
+        viewModel.numberOfPosts(in: section)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: PostTableViewCell.reuseIdentifier, for: indexPath) as? PostTableViewCell else {
             return UITableViewCell()
         }
-        
-        let post = indexPath.section == 0
-        ? viewModel.model.favoritePosts[indexPath.row]
-        : viewModel.model.regularPosts[indexPath.row]
+        let post: Post
+        switch viewModel.sections[indexPath.section] {
+        case .favorites:
+            post = viewModel.model.favoritePosts[indexPath.row]
+        case .regular:
+            post = viewModel.model.regularPosts[indexPath.row]
+        }
         
         cell.configure(with: post)
         cell.onStarTapped = { [weak self] in
@@ -96,7 +102,37 @@ extension PostsViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        section == 0 ? "Favorites" : "All Posts"
+        switch viewModel.sections[section] {
+        case .favorites:
+            return "Favorite Posts"
+        case .regular:
+            return "All Posts"
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] _, _, completionHandler in
+            guard let self = self else { return }
+            
+            let oldSections = self.viewModel.sections
+            self.viewModel.deletePost(at: indexPath)
+            let newSections = self.viewModel.sections
+            
+            tableView.performBatchUpdates {
+                if oldSections != newSections {
+                    // The number of sections has changed (likely removed .favorites)
+                    tableView.deleteSections(IndexSet(integer: indexPath.section), with: .automatic)
+                } else {
+                    // Just remove the row
+                    tableView.deleteRows(at: [indexPath], with: .automatic)
+                }
+            }
+    
+            completionHandler(true)
+        }
+        deleteAction.backgroundColor = .systemRed
+        
+        return UISwipeActionsConfiguration(actions: [deleteAction])
     }
 }
 
