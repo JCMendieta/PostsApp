@@ -37,9 +37,26 @@ enum PostsScreenSection {
             super.viewDidLoad()
             view.backgroundColor = .white
             title = "Posts"
+            navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(didTapTrashButton))
             setupTableView()
             Task {
                 await fetchPosts()
+            }
+        }
+        
+        @objc private func didTapTrashButton() {
+            let oldSections = viewModel.sections
+            viewModel.deleteAllRegularPosts()
+            let newSections = viewModel.sections
+            
+            tableView.performBatchUpdates {
+                if oldSections != newSections {
+                    tableView.deleteSections(IndexSet(integer: 1), with: .automatic)
+                } else if let regularSectionIndex = viewModel.sections.firstIndex(of: .regular) {
+                    let count = tableView.numberOfRows(inSection: regularSectionIndex)
+                    let indexPaths = (0..<count).map { IndexPath(row: $0, section: regularSectionIndex) }
+                    tableView.deleteRows(at: indexPaths, with: .automatic)
+                }
             }
         }
         
@@ -69,9 +86,14 @@ extension PostsViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let post = indexPath.section == 0
-        ? viewModel.model.favoritePosts[indexPath.row]
-        : viewModel.model.regularPosts[indexPath.row]
+        let post: Post
+        switch viewModel.sections[indexPath.section] {
+        case .favorites:
+            post = viewModel.model.favoritePosts[indexPath.row]
+        case .regular:
+            post = viewModel.model.regularPosts[indexPath.row]
+        }
+        
         tableView.deselectRow(at: indexPath, animated: true)
         viewModel.coordinator?.navigateToPostDetails(postId: String(post.id), postUserId: String(post.userId))
     }

@@ -19,6 +19,7 @@ protocol PostsViewModelProtocol {
     func deletePost(at indexPath: IndexPath)
     func hasFavorites() -> Bool
     func numberOfPosts(in section: Int) -> Int
+    func deleteAllRegularPosts()
 }
 
 final class PostsViewModel: PostsViewModelProtocol {
@@ -27,7 +28,14 @@ final class PostsViewModel: PostsViewModelProtocol {
     var model = PostsScreenModel()
     
     var sections: [PostsScreenSection] {
-        model.favoritePosts.isEmpty ? [.regular] : [.favorites, .regular]
+        if model.favoritePosts.isEmpty {
+            return [.regular]
+        }
+        else if model.regularPosts.isEmpty {
+            return [.favorites]
+        } else {
+            return [.favorites, .regular]
+        }
     }
     
     init(
@@ -86,5 +94,9 @@ extension PostsViewModel {
         case .regular:
             return model.regularPosts[indexPath.row]
         }
+    }
+    
+    func deleteAllRegularPosts() {
+        model.posts.removeAll { !$0.isFavorite }
     }
 }
