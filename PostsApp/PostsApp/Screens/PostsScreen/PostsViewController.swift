@@ -15,6 +15,7 @@ import UIKit
             tableView.translatesAutoresizingMaskIntoConstraints = false
             tableView.dataSource = self
             tableView.delegate = self
+            tableView.register(PostTableViewCell.self, forCellReuseIdentifier: PostTableViewCell.reuseIdentifier)
             return tableView
         }()
 
@@ -57,24 +58,45 @@ import UIKit
 
 //MARK: - TableView protocols
 //FIXME: - Manage data type of userId in another component
-extension PostsViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        viewModel.coordinator?.navigateToPostDetails(postId: String(viewModel.model.posts[indexPath.row].id), postUserId: String(viewModel.model.posts[indexPath.row].userId))
+extension PostsViewController: UITableViewDelegate, UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
     }
-}
-
-extension PostsViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let post = indexPath.section == 0
+        ? viewModel.model.favoritePosts[indexPath.row]
+        : viewModel.model.regularPosts[indexPath.row]
+        tableView.deselectRow(at: indexPath, animated: true)
+        viewModel.coordinator?.navigateToPostDetails(postId: String(post.id), postUserId: String(post.userId))
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.model.posts.count
+        section == 0
+        ? viewModel.model.favoritePosts.count
+        : viewModel.model.regularPosts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-        var content = cell.defaultContentConfiguration()
-        content.text = viewModel.model.posts[indexPath.row].title
-        cell.contentConfiguration = content
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: PostTableViewCell.reuseIdentifier, for: indexPath) as? PostTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        let post = indexPath.section == 0
+        ? viewModel.model.favoritePosts[indexPath.row]
+        : viewModel.model.regularPosts[indexPath.row]
+        
+        cell.configure(with: post)
+        cell.onStarTapped = { [weak self] in
+            self?.viewModel.toggleFavorite(for: post.id)
+            self?.tableView.reloadData()
+        }
         
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        section == 0 ? "Favorites" : "All Posts"
     }
 }
 
