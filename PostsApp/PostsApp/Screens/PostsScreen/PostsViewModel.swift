@@ -14,6 +14,7 @@ protocol PostsViewModelProtocol {
     
     func fetchPosts() async
     func mapToPostsModel(from postsDTO: [PostDTO]) -> [Post]
+    func toggleFavorite(for postId: Int)
 }
 
 final class PostsViewModel: PostsViewModelProtocol {
@@ -41,5 +42,11 @@ final class PostsViewModel: PostsViewModelProtocol {
     func mapToPostsModel(from postsDTO: [PostDTO]) -> [Post] {
         let posts = postsDTO.map { Post(from: $0) }
         return posts
+    }
+    
+    func toggleFavorite(for postId: Int) {
+        if let index = model.posts.firstIndex(where: { $0.id == postId }) {
+            model.posts[index].isFavorite.toggle()
+        }
     }
 }

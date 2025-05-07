@@ -10,6 +10,7 @@ import Foundation
 struct Post {
     let userId, id: Int
     let title, body: String
+    var isFavorite: Bool = false
     
     init() {
         self.userId = 0
